@@ -1,9 +1,8 @@
 "use client";
 import { AvatarImage } from "@radix-ui/react-avatar";
-import { Home, Settings, UserPlus } from "lucide-react";
+import { Home, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { useAuthState } from "@/components/providers/auth-context";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DialogTitle } from "@/components/ui/dialog";
@@ -26,6 +25,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { authClient } from "@/lib/auth-client";
 import CreateTeam from "@/modules/dashboard/views/ui/create-team";
 import { Logout } from "./logout";
+import { useTheme } from "next-themes";
 
 export default function User() {
   const auth = useAuthState();
@@ -46,17 +46,19 @@ export default function User() {
     }
   };
 
+  const { setTheme, resolvedTheme } = useTheme();
+
   return (
     <Slot modal>
       <SlotTrigger asChild>
-        <Avatar className="cursor-pointer">
+        <Avatar>
           <AvatarFallback>{auth?.data?.user?.name.slice(0, 2)}</AvatarFallback>
           <AvatarImage src={auth?.data?.user?.image as string} />
         </Avatar>
       </SlotTrigger>
       <SlotContent
         className={
-          !isMobile ? "mr-10 w-62.5 mt-2" : "px-4 pb-4 grid gap-5 text-sm"
+          !isMobile ? "mr-10 w-[250px] mt-2" : "px-4 pb-4 grid gap-5 text-sm"
         }
       >
         {isMobile && (
@@ -73,6 +75,9 @@ export default function User() {
         </div>
         <SlotSeparator className="hidden sm:flex" />
         <SlotItem onClick={switchDashboard}>Personal Dashboard</SlotItem>
+        <SlotItem asChild className="hidden">
+          <Link href={`/~/me/settings`}>Account Settings</Link>
+        </SlotItem>
         <CreateTeam>
           <SlotItem
             onSelect={(e) => e.preventDefault()}
@@ -83,33 +88,36 @@ export default function User() {
           </SlotItem>
         </CreateTeam>
         <SlotSeparator className="hidden sm:flex" />
-        <div className="flex justify-center items-center gap-2 py-1.5">
-          <ThemeChanger
-            variant="ghost"
-            size="icon-sm"
-            className="border border-muted"
-          />
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Submit"
-            className="border border-muted"
+        <SlotItem
+          className="flex items-center justify-between"
+          onSelect={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+        >
+          Toggle Theme
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4"
           >
-            <Link href="/">
-              <Home className="size-4" />
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Submit"
-            className="border border-muted"
-          >
-            <Link href={`/~/me/settings`}>
-              <Settings className="size-4" />
-            </Link>
-          </Button>
-        </div>
+            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+            <path d="M12 3l0 18"></path>
+            <path d="M12 9l4.65 -4.65"></path>
+            <path d="M12 14.3l7.37 -7.37"></path>
+            <path d="M12 19.6l8.85 -8.85"></path>
+          </svg>
+        </SlotItem>
+        <SlotItem asChild>
+          <Link href="/" className="flex items-center justify-between">
+            Homepage <Home className="size-4" />
+          </Link>
+        </SlotItem>
         <SlotSeparator className="hidden sm:flex" />
         <SlotItem
           onSelect={(e) => {
