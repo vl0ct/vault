@@ -59,7 +59,7 @@ export default function TeamSwitcher() {
 
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild id="team-switcher-trigger">
         <Button
           variant="secondary"
           size="sm"

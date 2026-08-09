@@ -50,7 +50,7 @@ export default function User() {
 
   return (
     <Slot modal>
-      <SlotTrigger asChild>
+      <SlotTrigger asChild id="user-menu-trigger">
         <Avatar>
           <AvatarFallback>{auth?.data?.user?.name.slice(0, 2)}</AvatarFallback>
           <AvatarImage src={auth?.data?.user?.image as string} />
