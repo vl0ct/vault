@@ -20,6 +20,7 @@ interface ProjectSettingsProps {
   prevDescription: string;
   prevType: ProjectType;
   projectType: "PERSONAL" | "TEAM";
+  teamId?: string;
   children: React.ReactNode;
 }
 
@@ -29,6 +30,7 @@ export default function ProjectSettings({
   prevDescription,
   prevType,
   projectType,
+  teamId,
   children,
 }: ProjectSettingsProps) {
   const [name, setName] = useState(prevName);
@@ -48,16 +50,18 @@ export default function ProjectSettings({
         name: name,
         description: description,
         projectType,
+        teamId,
       },
       {
         onSuccess: () => {
           queryClient.invalidateQueries(
-            trpc.projects.get_all.queryOptions({ type: projectType }),
+            trpc.projects.get_all.queryOptions({ type: projectType, teamId }),
           );
           queryClient.invalidateQueries(
             trpc.projects.get_by_slug.queryOptions({
               slug: slug,
               type: projectType,
+              teamId,
             }),
           );
           setModalOpen(false);
@@ -92,6 +96,7 @@ export default function ProjectSettings({
         slug={slug}
         prevType={prevType}
         projectType={projectType}
+        teamId={teamId}
       />
     </div>
   );

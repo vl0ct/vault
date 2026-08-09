@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import AllMembers from "@/modules/dashboard/views/ui/members/all-members";
 import MembersToolbar from "@/modules/dashboard/views/ui/members/members-toolbar";
 
@@ -18,7 +19,9 @@ export default async function Members({
       <div className="mt-6">
         <h1 className="text-sm font-medium">Members</h1>
       </div>
-      <AllMembers />
+      <Suspense fallback={null}>
+        <AllMembers teamId={param.teamId} />
+      </Suspense>
     </div>
   );
 }

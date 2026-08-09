@@ -15,12 +15,14 @@ import { useTRPC } from "@/trpc/client";
 interface ProjectSettingsProps {
   slug: string;
   projectType: "PERSONAL" | "TEAM";
+  teamId?: string;
   children: React.ReactNode;
 }
 
 export default function DeleteProject({
   slug,
   projectType,
+  teamId,
   children,
 }: ProjectSettingsProps) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,11 +43,15 @@ export default function DeleteProject({
       {
         slug: slug,
         type: projectType,
+        teamId,
       },
       {
         onSuccess: (data) => {
           queryClient.invalidateQueries(
-            trpc.projects.get_all.queryOptions({ type: projectType }),
+            trpc.projects.get_all.queryOptions({
+              type: projectType,
+              teamId,
+            }),
           );
           if (pathname.includes(data.slug)) {
             router.push("/~");

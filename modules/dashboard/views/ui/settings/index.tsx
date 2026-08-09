@@ -19,7 +19,7 @@ export default function TeamSettings({ slug }: { slug: string }) {
   const queryClient = useQueryClient();
 
   const { data: teamMembers } = useQuery(
-    trpc.teams.get_members_in_active_team.queryOptions(),
+    trpc.teams.get_members.queryOptions({ teamId: slug }),
   );
 
   const adminCount =
@@ -56,7 +56,7 @@ export default function TeamSettings({ slug }: { slug: string }) {
       });
     }
     queryClient.invalidateQueries(
-      trpc.teams.get_members_in_active_team.queryOptions(),
+      trpc.teams.get_members.queryOptions({ teamId: slug }),
     );
     toast.success("All members kicked");
     setKickMembersOpen(false);

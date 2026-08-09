@@ -19,12 +19,14 @@ interface ChangeProjectTypeProps {
   slug: string;
   prevType: string;
   projectType: "PERSONAL" | "TEAM";
+  teamId?: string;
 }
 
 export default function ChangeProjectType({
   slug,
   prevType,
   projectType,
+  teamId,
 }: ChangeProjectTypeProps) {
   const trpc = useTRPC();
   const { mutate, isPending: typePending } = useMutation(
@@ -43,17 +45,18 @@ export default function ChangeProjectType({
   const handleTypeChange = (value: ProjectType) => {
     setType(value);
     mutate(
-      { slug: slug, type: value, projectType },
+      { slug: slug, type: value, projectType, teamId },
       {
         onSuccess: () => {
           toast.success("Project type updated");
           queryClient.invalidateQueries(
-            trpc.projects.get_all.queryOptions({ type: projectType }),
+            trpc.projects.get_all.queryOptions({ type: projectType, teamId }),
           );
           queryClient.invalidateQueries(
             trpc.projects.get_by_slug.queryOptions({
               slug: slug,
               type: projectType,
+              teamId,
             }),
           );
         },

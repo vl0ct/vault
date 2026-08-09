@@ -1,11 +1,10 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import z from "zod";
 import { db } from "@/db/client";
 import { organization, teamProject } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { sendEmail } from "@/lib/email";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
 const createTeamSchema = z.object({
@@ -16,6 +15,25 @@ const updateTeamSchema = z.object({
   teamId: z.string(),
   description: z.string().optional(),
 });
+
+async function hasOrgPermission(
+  organizationId: string,
+  permissions: Record<string, string[]>,
+) {
+  const result = await auth.api.hasPermission({
+    headers: await headers(),
+    body: {
+      organizationId,
+      permissions,
+    },
+  });
+  if (!result.success) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You do not have permission to perform this action.",
+    });
+  }
+}
 
 export const teamRouter = createTRPCRouter({
   create: protectedProcedure
@@ -32,19 +50,15 @@ export const teamRouter = createTRPCRouter({
       const data = await auth.api.createOrganization({
         body: {
           name: input.name,
-          slug: slug,
+          slug,
           logo: `https://az-avatar.vercel.app/api/avatar?text=${input.name.slice(0, 2)}&textColor=#111111&fontSize=20&bgColor=#fafafa&height=50&width=50`,
-          userId: ctx.auth.session.userId,
-          keepCurrentActiveOrganization: false,
         },
         headers: await headers(),
       });
       return data;
     }),
 
-  get_all: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.auth.session.userId;
-
+  get_all: protectedProcedure.query(async () => {
     const data = await auth.api.listOrganizations({
       headers: await headers(),
     });
@@ -60,72 +74,49 @@ export const teamRouter = createTRPCRouter({
         role: z.enum(["admin", "member", "owner"]),
       }),
     )
-    .mutation(async ({ input, ctx }) => {
-      const hasPerms = await auth.api.hasPermission({
-        headers: await headers(),
-        body: {
-          permissions: {
-            organization: ["invite"],
-          },
-        },
+    .mutation(async ({ input }) => {
+      await hasOrgPermission(input.teamId, {
+        organization: ["invite"],
       });
-      if (!hasPerms)
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message:
-            "You do not have permission to invite users to this organization.",
-        });
       const data = await auth.api.createInvitation({
         body: {
           email: input.email,
           role: input.role,
+          organizationId: input.teamId,
           resend: true,
         },
         headers: await headers(),
       });
-      console.log(data);
       return data;
     }),
-  get_active_team: protectedProcedure.query(async ({ ctx }) => {
+  get_active_team: protectedProcedure.query(async () => {
     const data = await auth.api.getFullOrganization({
       headers: await headers(),
     });
 
     return data;
   }),
-  get_members_in_active_team: protectedProcedure.query(async ({ ctx }) => {
-    const data = await auth.api.listMembers({
-      query: {
-        sortBy: "createdAt",
-      },
-      headers: await headers(),
-    });
-    return data;
-  }),
+  get_members: protectedProcedure
+    .input(z.object({ teamId: z.string() }))
+    .query(async ({ input }) => {
+      const data = await auth.api.listMembers({
+        query: {
+          organizationId: input.teamId,
+          sortBy: "createdAt",
+        },
+        headers: await headers(),
+      });
+      return data;
+    }),
   delete: protectedProcedure
     .input(z.object({ teamId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      const hasPerms = await auth.api.hasPermission({
-        headers: await headers(),
-        body: {
-          permissions: {
-            organization: ["delete"],
-          },
-        },
+    .mutation(async ({ input }) => {
+      await hasOrgPermission(input.teamId, {
+        organization: ["delete"],
       });
-      if (!hasPerms)
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You do not have permission to delete this organization.",
-        });
-      const [org] = await db
-        .select()
-        .from(organization)
-        .where(eq(organization.id, input.teamId));
-
       const data = await auth.api.deleteOrganization({
         body: {
-          organizationId: org.id,
+          organizationId: input.teamId,
         },
         headers: await headers(),
       });
@@ -134,11 +125,22 @@ export const teamRouter = createTRPCRouter({
 
   update: protectedProcedure
     .input(updateTeamSchema)
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
+      await hasOrgPermission(input.teamId, {
+        organization: ["update"],
+      });
+
       const [org] = await db
         .select()
         .from(organization)
         .where(eq(organization.id, input.teamId));
+
+      if (!org) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Organization not found.",
+        });
+      }
 
       const existingMetadata = org.metadata ? JSON.parse(org.metadata) : {};
       const newMetadata = {
@@ -157,7 +159,10 @@ export const teamRouter = createTRPCRouter({
 
   delete_all_projects: protectedProcedure
     .input(z.object({ teamId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
+      await hasOrgPermission(input.teamId, {
+        organization: ["delete"],
+      });
       await db.delete(teamProject).where(eq(teamProject.teamId, input.teamId));
       return { success: true };
     }),
