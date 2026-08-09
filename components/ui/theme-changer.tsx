@@ -1,17 +1,36 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import * as React from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 export function ThemeChanger({ ...props }) {
   const { setTheme, resolvedTheme } = useTheme();
 
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (
+        e.key.toLowerCase() !== "d" ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        e.shiftKey ||
+        (e.target as HTMLElement)?.closest("input, textarea, select")
+      ) {
+        return;
+      }
+      setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [setTheme, resolvedTheme]);
+
   return (
     <Button
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      size="icon-sm"
+      size="icon-lg"
       variant="outline"
+      className="border-dashed"
       {...props}
     >
       <svg
@@ -26,6 +45,7 @@ export function ThemeChanger({ ...props }) {
         strokeLinejoin="round"
         className="size-4"
       >
+        <title>Toggle theme</title>
         <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
         <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
         <path d="M12 3l0 18"></path>
