@@ -18,5 +18,7 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "registries": {}
+  "registries": {
+    "@solaceui": "https://www.solaceui.com/r/{name}.json"
+  }
 }
