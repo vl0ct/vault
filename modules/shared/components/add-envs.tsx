@@ -18,9 +18,14 @@ interface Env {
 interface AddEnvsProps {
   projectSlug: string;
   projectType: "PERSONAL" | "TEAM";
+  teamId?: string;
 }
 
-export default function AddEnvs({ projectSlug, projectType }: AddEnvsProps) {
+export default function AddEnvs({
+  projectSlug,
+  projectType,
+  teamId,
+}: AddEnvsProps) {
   const [envs, setEnvs] = useState<Env[]>([{ key: "", value: "" }]);
 
   const handleAdd = () => setEnvs([...envs, { key: "", value: "" }]);
@@ -89,6 +94,7 @@ export default function AddEnvs({ projectSlug, projectType }: AddEnvsProps) {
           filtered.map(({ key, value }) => [key, value]),
         ),
         projectType,
+        teamId,
       },
       {
         onSuccess: () => {
@@ -96,6 +102,7 @@ export default function AddEnvs({ projectSlug, projectType }: AddEnvsProps) {
             trpc.projects.get_by_slug.queryOptions({
               slug: projectSlug,
               type: projectType,
+              teamId,
             }),
           );
           setEnvs([{ key: "", value: "" }]);

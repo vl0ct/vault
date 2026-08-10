@@ -1,15 +1,15 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import ProjectCard from "@/modules/shared/components/project-card";
 import { useTRPC } from "@/trpc/client";
 import EmptyProject from "../project/empty";
 
-function ProjectsGrid({ projects }: { projects: any[] }) {
+function ProjectsGrid({ projects, slug }: { projects: any[]; slug: string }) {
   const searchParams = useSearchParams();
 
   const viewType = (searchParams.get("viewType") as "list" | "grid") ?? "grid";
@@ -38,6 +38,7 @@ function ProjectsGrid({ projects }: { projects: any[] }) {
           project={project}
           viewType={viewType}
           projectType="TEAM"
+          teamId={slug}
         />
       ))}
     </div>
@@ -46,17 +47,13 @@ function ProjectsGrid({ projects }: { projects: any[] }) {
 
 export default function AllTeamProjects({ slug }: { slug: string }) {
   const trpc = useTRPC();
-  const qc = useQueryClient();
 
-  const queryOptions = trpc.projects.get_all.queryOptions({ type: "TEAM" });
+  const queryOptions = trpc.projects.get_all.queryOptions({
+    type: "TEAM",
+    teamId: slug,
+  });
 
   const { data: projects, isPending } = useQuery(queryOptions);
-
-  useEffect(() => {
-    if (slug) {
-      qc.invalidateQueries({ queryKey: queryOptions.queryKey });
-    }
-  }, [slug, qc, queryOptions.queryKey]);
 
   if (isPending) {
     return (
@@ -82,7 +79,7 @@ export default function AllTeamProjects({ slug }: { slug: string }) {
         </div>
       }
     >
-      <ProjectsGrid projects={projects} />
+      <ProjectsGrid projects={projects} slug={slug} />
     </Suspense>
   );
 }

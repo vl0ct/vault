@@ -1,3 +1,4 @@
+import "server-only";
 import { webcrypto } from "crypto";
 
 const crypto = webcrypto;

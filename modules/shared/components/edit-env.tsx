@@ -14,6 +14,7 @@ interface EditEnvProps {
   children: React.ReactNode;
   projectSlug: string;
   projectType: "PERSONAL" | "TEAM";
+  teamId?: string;
   currentKey: string;
   currentValue: string;
 }
@@ -22,6 +23,7 @@ export default function EditEnv({
   children,
   projectSlug,
   projectType,
+  teamId,
   currentKey,
   currentValue,
 }: EditEnvProps) {
@@ -39,6 +41,7 @@ export default function EditEnv({
     const updates: any = {
       slug: projectSlug,
       projectType,
+      teamId,
     };
 
     if (newKey !== currentKey) {
@@ -54,6 +57,7 @@ export default function EditEnv({
           trpc.projects.get_by_slug.queryOptions({
             slug: projectSlug,
             type: projectType,
+            teamId,
           }),
         );
         setModalOpen(false);

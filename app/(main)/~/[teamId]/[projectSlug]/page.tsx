@@ -4,12 +4,13 @@ import { caller } from "@/trpc/caller";
 export const generateMetadata = async ({
   params,
 }: {
-  params: { projectSlug: string };
+  params: { teamId: string; projectSlug: string };
 }) => {
   const param = await params;
   const data = await caller.projects.get_by_slug({
     slug: param.projectSlug,
     type: "TEAM",
+    teamId: param.teamId,
   });
 
   return {
@@ -24,7 +25,7 @@ export const generateMetadata = async ({
 export default async function TeamProjectPage({
   params,
 }: {
-  params: { projectSlug: string };
+  params: { teamId: string; projectSlug: string };
 }) {
   const param = await params;
 

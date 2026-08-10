@@ -9,11 +9,13 @@ import ResponsiveModal from "@/modules/shared/components/responsive-modal";
 import { useTRPC } from "@/trpc/client";
 
 export default function ChangeRole({
+  teamId,
   memberId,
   memberName,
   currentRole,
   children,
 }: {
+  teamId: string;
   memberId: string;
   memberName: string;
   currentRole: string;
@@ -36,7 +38,7 @@ export default function ChangeRole({
     if (!error) {
       toast.success(`Role changed to ${selectedRole}`);
       queryClient.invalidateQueries(
-        trpc.teams.get_members_in_active_team.queryOptions(),
+        trpc.teams.get_members.queryOptions({ teamId }),
       );
       setModalOpen(false);
     } else {

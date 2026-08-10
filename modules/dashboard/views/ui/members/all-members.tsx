@@ -14,7 +14,7 @@ import { useTRPC } from "@/trpc/client";
 import KickUser from "./kick";
 import ChangeRole from "./change-role";
 
-export default function AllMembers() {
+export default function AllMembers({ teamId }: { teamId: string }) {
   const trpc = useTRPC();
   const auth = useAuthState();
 
@@ -30,7 +30,7 @@ export default function AllMembers() {
   }, [query]);
 
   const membersQuery = useQuery(
-    trpc.teams.get_members_in_active_team.queryOptions(),
+    trpc.teams.get_members.queryOptions({ teamId }),
   );
 
   useEffect(() => {
@@ -103,6 +103,7 @@ export default function AllMembers() {
                 !["owner", "admin"].includes(member.role))) && (
               <div className="flex items-center gap-1">
                 <ChangeRole
+                  teamId={teamId}
                   memberId={member.userId}
                   memberName={member.user.name || "this user"}
                   currentRole={member.role}
@@ -112,7 +113,7 @@ export default function AllMembers() {
                   </Button>
                 </ChangeRole>
 
-                <KickUser email={member.user.email}>
+                <KickUser teamId={teamId} email={member.user.email}>
                   <Button size="sm" className="h-8 w-8 sm:w-auto">
                     <span className="hidden sm:flex">Kick</span>
                     <LogOut className="size-3.5" />
