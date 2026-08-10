@@ -49,7 +49,7 @@ cd vault
 2. Install dependencies:
 
 ```bash
-bun install
+pnpm install
 ```
 
 3. Set up your environment variables:
@@ -64,16 +64,16 @@ cp .env.example .env.local
 DATABASE_URL="postgresql://username:password@localhost:5432/vault"
 ```
 
-5. Push the database schema:
+5. Apply the database migrations:
 
 ```bash
-bun run db:push
+pnpm run db:migrate
 ```
 
 6. Start the development server:
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 The application will be available at `http://localhost:3000`.
@@ -82,14 +82,15 @@ The application will be available at `http://localhost:3000`.
 
 ### Available Scripts
 
-- `bun run dev` - Start development server with Turbopack
-- `bun run build` - Build for production
-- `bun run start` - Start production server
-- `bun run lint` - Run Biome linting
-- `bun run format` - Format code with Biome
-- `bun run db:push` - Push database schema changes
-- `bun run db:studio` - Open Drizzle Studio
-- `bun run schema:generate` - Generate database migrations
+- `pnpm run dev` - Start development server with Turbopack
+- `pnpm run build` - Build for production
+- `pnpm run start` - Start production server
+- `pnpm run lint` - Run Biome linting
+- `pnpm run format` - Format code with Biome
+- `pnpm run db:push` - Push database schema changes (development only)
+- `pnpm run db:migrate` - Apply tracked migrations (use for production)
+- `pnpm run db:studio` - Open Drizzle Studio
+- `pnpm run schema:generate` - Generate database migrations
 
 ### Project Structure
 
@@ -131,26 +132,49 @@ GITHUB_CLIENT_SECRET=
 
 This project uses PostgreSQL with Drizzle ORM. Make sure you have PostgreSQL running and create a database for the application.
 
-## 🚀 Deployment
+## 🚀 Deployment (Vercel)
 
-1. Build the application:
+The project is configured to run on Vercel with the Node.js runtime.
 
-```bash
-bun run build
+### Environment Variables
+
+Set these in your Vercel project settings (Settings → Environment Variables), plus a local `.env.local` for development:
+
+```env
+DATABASE_URL="your-postgresql-connection-string"
+BETTER_AUTH_URL="https://your-domain.com"
+BETTER_AUTH_SECRET=""         # openssl rand -base64 32 — generate a fresh one for production
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+GMAIL_USER=""
+GMAIL_PASS=""                 # Gmail app password
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
 ```
 
-2. Set up your production environment variables
+> `BETTER_AUTH_SECRET` is also used as the AES encryption key for stored environment values. Do not rotate it after release, or previously saved values become unreadable.
 
-3. Push the database schema to production:
+### OAuth Redirect URIs
+
+Register the production callback URLs in your OAuth provider dashboards:
+
+- Google Cloud Console: add `https://your-domain.com/api/auth/callback/google`
+- GitHub OAuth App: add `https://your-domain.com/api/auth/callback/github`
+
+### Database Migrations
+
+Apply tracked migrations to the production database from your machine/CI (Vercel does not run them):
 
 ```bash
-bun run db:push
+pnpm run db:migrate
 ```
 
-4. Start the production server:
+Use `db:migrate` instead of `db:push` in production to avoid silent schema drift.
+
+### Build
 
 ```bash
-bun run start
+pnpm run build
 ```
 
 ## 🤝 Contributing

@@ -8,9 +8,11 @@ import ResponsiveModal from "@/modules/shared/components/responsive-modal";
 import { useTRPC } from "@/trpc/client";
 
 export default function KickUser({
+  teamId,
   email,
   children,
 }: {
+  teamId: string;
   email: string;
   children: React.ReactNode;
 }) {
@@ -31,7 +33,7 @@ export default function KickUser({
       toast.success("Kicked user from team.");
       queryClient.invalidateQueries(trpc.teams.get_all.queryOptions());
       queryClient.invalidateQueries(
-        trpc.teams.get_members_in_active_team.queryOptions(),
+        trpc.teams.get_members.queryOptions({ teamId }),
       );
       setModalOpen(false);
     }

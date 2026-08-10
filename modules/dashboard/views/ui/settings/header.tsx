@@ -21,15 +21,15 @@ export default function TeamSettingsHeader({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-medium">{organization?.name}</h1>
-          <p className="text-sm text-foreground/80">
-            {loading ? (
-              <Skeleton className="h-3 w-40" />
-            ) : data === "owner" ? (
-              "You created this team"
-            ) : (
-              "You are a member of this team"
-            )}
-          </p>
+          {loading ? (
+            <Skeleton className="mt-1 h-3 w-40" />
+          ) : (
+            <p className="text-sm text-foreground/80">
+              {data === "owner"
+                ? "You created this team"
+                : "You are a member of this team"}
+            </p>
+          )}
         </div>
         {loading ? (
           <Skeleton className="h-10 w-28" />

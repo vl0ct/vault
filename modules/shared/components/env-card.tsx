@@ -30,6 +30,7 @@ interface EnvCardProps {
   value: string;
   projectSlug: string;
   projectType: "PERSONAL" | "TEAM";
+  teamId?: string;
 }
 
 export default function EnvCard({
@@ -37,6 +38,7 @@ export default function EnvCard({
   value,
   projectSlug,
   projectType,
+  teamId,
 }: EnvCardProps) {
   const [visible, setVisible] = useState<Record<string, boolean>>({});
 
@@ -87,6 +89,7 @@ export default function EnvCard({
             <EditEnv
               projectSlug={projectSlug}
               projectType={projectType}
+              teamId={teamId}
               currentKey={kkey}
               currentValue={value}
             >
@@ -99,6 +102,7 @@ export default function EnvCard({
             <DeleteEnv
               projectSlug={projectSlug}
               projectType={projectType}
+              teamId={teamId}
               envKey={kkey}
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>

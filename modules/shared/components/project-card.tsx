@@ -5,7 +5,6 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import {
-  Copy,
   Edit,
   EllipsisVertical,
   FlaskConical,
@@ -16,7 +15,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +26,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { decrypt } from "@/lib/crypto";
 import { cn } from "@/lib/utils";
 import DeleteProject from "@/modules/dashboard/views/ui/project/delete-project";
 import type { ProjectType } from "./change-project-type";
@@ -55,6 +52,7 @@ interface ProjectCardProps {
   viewType: "grid" | "list";
   projectType: "PERSONAL" | "TEAM";
   basePath?: string;
+  teamId?: string;
 }
 
 export default function ProjectCard({
@@ -62,6 +60,7 @@ export default function ProjectCard({
   viewType,
   projectType,
   basePath,
+  teamId,
 }: ProjectCardProps) {
   const Icon = projectTypes[project.type] ?? Pickaxe;
   const pathname = usePathname();
@@ -72,17 +71,6 @@ export default function ProjectCard({
       : pathname.split("/").slice(0, 3).join("/");
 
   const actualBasePath = basePath || defaultBasePath;
-  // const handleCopyAll = () => {
-  //   try {
-  //     const formatToString = Object.entries(project?.envs || {})
-  //       .map(([key, value]) => `${key}="${decrypt(value as string)}"`)
-  //       .join("\n");
-  //     navigator.clipboard.writeText(formatToString);
-  //     toast.success("Copied to clipboard");
-  //   } catch (error) {
-  //     toast.error("Failed to copy to clipboard");
-  //   }
-  // };
 
   return (
     <div
@@ -177,6 +165,7 @@ export default function ProjectCard({
                   prevDescription={project.description as string}
                   prevType={project.type}
                   projectType={projectType}
+                  teamId={teamId}
                 >
                   <Button
                     className="h-8 w-full justify-normal px-2! text-foreground/80 hover:text-foreground/90"
@@ -187,7 +176,11 @@ export default function ProjectCard({
                 </ProjectSettings>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <DeleteProject slug={project.slug} projectType={projectType}>
+                <DeleteProject
+                  slug={project.slug}
+                  projectType={projectType}
+                  teamId={teamId}
+                >
                   <Button
                     variant="ghost"
                     className="h-8 w-full justify-normal px-2! text-destructive/80 hover:text-destructive/90"

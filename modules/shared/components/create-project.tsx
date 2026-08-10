@@ -13,11 +13,13 @@ import ResponsiveModal from "./responsive-modal";
 interface CreateProjectProps {
   children: React.ReactNode;
   projectType: "PERSONAL" | "TEAM";
+  teamId?: string;
 }
 
 export default function CreateProject({
   children,
   projectType,
+  teamId,
 }: CreateProjectProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -35,11 +37,15 @@ export default function CreateProject({
         name,
         description,
         type: projectType,
+        teamId: projectType === "TEAM" ? teamId : undefined,
       },
       {
         onSuccess: () => {
           queryClient.invalidateQueries(
-            trpc.projects.get_all.queryOptions({ type: projectType }),
+            trpc.projects.get_all.queryOptions({
+              type: projectType,
+              teamId: projectType === "TEAM" ? teamId : undefined,
+            }),
           );
           setModalOpen(false);
           setName("");
@@ -51,11 +57,18 @@ export default function CreateProject({
   };
 
   if (error) {
-    if (JSON.parse(error.message)[0].code == "too_small") {
-      toast.error("Project name must be at least 2 characters long");
-    } else {
-      toast.error("An error occurred while creating the project");
+    let parsedMessage: string | null = null;
+    try {
+      const parsed = JSON.parse(error.message);
+      if (Array.isArray(parsed) && parsed[0]?.code === "too_small") {
+        parsedMessage = "Project name must be at least 2 characters long";
+      }
+    } catch {
+      // error.message wasn't JSON; fall back to the raw message below
     }
+    toast.error(
+      parsedMessage ?? "An error occurred while creating the project",
+    );
   }
 
   const content = (

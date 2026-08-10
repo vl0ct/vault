@@ -15,6 +15,6 @@ export async function sendEmail({ to, subject, html }: SendEmailProps) {
       html,
     });
   } catch (error: any) {
-    console.log(`Transporter error: ${error}`);
+    console.error(`Transporter error: ${error}`);
   }
 }

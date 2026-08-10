@@ -85,7 +85,7 @@ export default function TeamsToolbar({ teamId }: { teamId: string }) {
               <List className="size-4" />
             </Button>
           </ButtonGroup>
-          <CreateProject projectType="TEAM">
+          <CreateProject projectType="TEAM" teamId={teamId}>
             <Button>
               Create New <FolderCog className="ml-auto size-4" />
             </Button>

@@ -11,6 +11,7 @@ interface DeleteEnvProps {
   children: React.ReactNode;
   projectSlug: string;
   projectType: "PERSONAL" | "TEAM";
+  teamId?: string;
   envKey: string;
 }
 
@@ -18,6 +19,7 @@ export default function DeleteEnv({
   children,
   projectSlug,
   projectType,
+  teamId,
   envKey,
 }: DeleteEnvProps) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -33,6 +35,7 @@ export default function DeleteEnv({
       {
         slug: projectSlug,
         projectType,
+        teamId,
         deleteEnvKeys: [envKey],
       },
       {
@@ -41,6 +44,7 @@ export default function DeleteEnv({
             trpc.projects.get_by_slug.queryOptions({
               slug: projectSlug,
               type: projectType,
+              teamId,
             }),
           );
           setModalOpen(false);

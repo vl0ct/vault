@@ -34,12 +34,14 @@ interface ProjectViewProps {
   projectSlug: string;
   projectType: "PERSONAL" | "TEAM";
   backPath?: string;
+  teamId?: string;
 }
 
 export default function ProjectView({
   projectSlug,
   projectType,
   backPath,
+  teamId,
 }: ProjectViewProps) {
   const trpc = useTRPC();
   const {
@@ -51,10 +53,13 @@ export default function ProjectView({
     trpc.projects.get_by_slug.queryOptions({
       slug: projectSlug,
       type: projectType,
+      teamId,
     }),
   );
 
   const pathname = usePathname();
+
+  const resolvedTeamId = teamId ?? pathname.split("/")[2];
 
   const defaultBackPath =
     projectType === "PERSONAL"
@@ -128,6 +133,7 @@ export default function ProjectView({
             slug={projectSlug}
             prevType={project.type as ProjectType}
             projectType={projectType}
+            teamId={resolvedTeamId}
           />
           <Button
             onClick={handleDownloadAsEnv}
@@ -154,6 +160,7 @@ export default function ProjectView({
                   prevDescription={project.description as string}
                   prevType={project.type}
                   projectType={projectType}
+                  teamId={resolvedTeamId}
                 >
                   <Button
                     className="h-8 w-full justify-normal px-2! text-foreground/80 hover:text-foreground/90"
@@ -164,7 +171,11 @@ export default function ProjectView({
                 </ProjectSettings>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <DeleteProject slug={project.slug} projectType={projectType}>
+                <DeleteProject
+                  slug={project.slug}
+                  projectType={projectType}
+                  teamId={resolvedTeamId}
+                >
                   <Button
                     variant="ghost"
                     className="h-8 w-full justify-normal px-2! text-destructive/80 hover:text-destructive/90"
@@ -180,7 +191,11 @@ export default function ProjectView({
       </div>
 
       <div className="my-6">
-        <AddEnvs projectSlug={projectSlug} projectType={projectType} />
+        <AddEnvs
+          projectSlug={projectSlug}
+          projectType={projectType}
+          teamId={resolvedTeamId}
+        />
       </div>
 
       <div className="grid gap-3">
@@ -206,6 +221,7 @@ export default function ProjectView({
               value={value}
               projectSlug={projectSlug}
               projectType={projectType}
+              teamId={resolvedTeamId}
             />
           ),
         )}
