@@ -14,7 +14,9 @@ export default function Header() {
     <header className="bg-background">
       <div className="px-6 flex items-center justify-between py-4 pb-2">
         <div className="flex items-center gap-2">
-          <Container className="h-4! w-4!" />
+          <Link href="/">
+            <Container className="h-6! w-6!" />
+          </Link>
           <span className="text-foreground/40 text-sm">/</span>
           <TeamSwitcher />
         </div>
