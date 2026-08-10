@@ -135,6 +135,10 @@ export const projectRouter = createTRPCRouter({
 
       const teamId = requireTeamId(input.teamId);
       await getFullOrganization(teamId);
+      await assertProjectPermission(teamId, {
+        project: ["create"],
+      });
+
       const [createdProject] = await db
         .insert(teamProject)
         .values({
@@ -260,6 +264,9 @@ export const projectRouter = createTRPCRouter({
 
       const teamId = requireTeamId(input.teamId);
       await getFullOrganization(teamId);
+      await assertProjectPermission(teamId, {
+        project: ["update"],
+      });
 
       const [existingProject] = await db
         .select()
